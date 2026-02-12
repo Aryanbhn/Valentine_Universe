@@ -7,53 +7,41 @@ const bgMusic = document.getElementById("bgMusic");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-canvas.style.position = "absolute";
-canvas.style.top = "0";
-canvas.style.left = "0";
-canvas.style.zIndex = "1";
 
 let stars = [];
 let shootingStars = [];
 let particles = [];
-let images = [];
+let imageStars = []; // stars associated with images
 
 // ============================
 // CONFIGURATION
 // ============================
-const totalImages = 31; // Change this number to match your images
-const imageSize = 80; // size of clickable image stars
+const totalImages = 31; // number of images
+const imageSize = 120; // used for popup, not orbit
+const starCount = 200; // number of stars
+const clickRadius = 15; // how close the click must be to trigger
 
 // ============================
-// CREATE DYNAMIC IMAGE ELEMENTS
+// LOAD IMAGES
 // ============================
+let images = [];
 for (let i = 1; i <= totalImages; i++) {
     const img = new Image();
     img.src = `Image${i}.jpeg`;
-    img.className = "memory-image"; // style from CSS
-    img.style.pointerEvents = "auto"; // allow clicking
-    img.style.zIndex = "10"; // above canvas
-
-    // Append immediately, images will load asynchronously
-    document.body.appendChild(img);
-
-    images.push({
-        element: img,
-        angle: Math.random() * Math.PI * 2,
-        radius: 250 + Math.random() * 150,
-        speed: 0.0005 + Math.random() * 0.001
-    });
+    images.push(img);
 }
 
 // ============================
-// STAR CLASS (Twinkling + Glow)
+// STAR CLASS
 // ============================
 class Star {
-    constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+    constructor(x, y, image=null) {
+        this.x = x || Math.random() * canvas.width;
+        this.y = y || Math.random() * canvas.height;
         this.baseRadius = Math.random() * 2 + 0.5;
         this.radius = this.baseRadius;
         this.twinkleSpeed = Math.random() * 0.005 + 0.002;
+        this.image = image; // optional
     }
 
     update() {
@@ -118,7 +106,7 @@ class ShootingStar {
 }
 
 // ============================
-// PARTICLE BURST
+// PARTICLES
 // ============================
 class Particle {
     constructor(x, y) {
@@ -148,10 +136,19 @@ class Particle {
 }
 
 // ============================
-// CREATE STARS
+// CREATE STARS AND IMAGE STARS
 // ============================
-for (let i = 0; i < 200; i++) {
+for (let i = 0; i < starCount; i++) {
     stars.push(new Star());
+}
+
+// randomly assign images to stars
+for (let i = 0; i < images.length; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const star = new Star(x, y, images[i]);
+    stars.push(star);
+    imageStars.push(star);
 }
 
 // ============================
@@ -195,15 +192,6 @@ function animate() {
         return p.update();
     });
 
-    // Orbiting image stars
-    images.forEach(img => {
-        img.angle += img.speed;
-        const x = canvas.width / 2 + Math.cos(img.angle) * img.radius;
-        const y = canvas.height / 2 + Math.sin(img.angle) * img.radius;
-        img.element.style.left = `${x - imageSize / 2}px`;
-        img.element.style.top = `${y - imageSize / 2}px`;
-    });
-
     requestAnimationFrame(animate);
 }
 
@@ -229,4 +217,31 @@ document.body.addEventListener("click", () => {
 window.addEventListener("resize", () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+});
+
+// ============================
+// POPUP HANDLING
+// ============================
+const popup = document.getElementById("popup");
+const popupImage = document.getElementById("popupImage");
+const closePopup = document.getElementById("closePopup");
+
+canvas.addEventListener("click", e => {
+    const rect = canvas.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+
+    for (let star of imageStars) {
+        const dx = clickX - star.x;
+        const dy = clickY - star.y;
+        if (Math.sqrt(dx * dx + dy * dy) < clickRadius) {
+            popupImage.src = star.image.src;
+            popup.classList.remove("hidden");
+            break;
+        }
+    }
+});
+
+closePopup.addEventListener("click", () => {
+    popup.classList.add("hidden");
 });
