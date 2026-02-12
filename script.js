@@ -12,18 +12,30 @@ let images = [];
 let angle = 0;
 
 // ============================
-// HANDLE ANY NUMBER OF IMAGES
+// CONFIGURATION
 // ============================
-const imageElements = document.querySelectorAll(".memory-image");
+const totalImages = 31; // Change this number if you add/remove images
+const imageSize = 80; // size of clickable image stars
 
-imageElements.forEach(img => {
+// ============================
+// DYNAMIC IMAGE ELEMENTS
+// ============================
+for (let i = 1; i <= totalImages; i++) {
+    const img = new Image();
+    img.src = `Image${i}.jpeg`; // make sure your images are named correctly
+    img.style.position = "absolute";
+    img.style.width = `${imageSize}px`;
+    img.style.height = `${imageSize}px`;
+    img.style.pointerEvents = "auto"; // allows clicking
+    document.body.appendChild(img);
+
     images.push({
         element: img,
         angle: Math.random() * Math.PI * 2,
         radius: 250 + Math.random() * 150,
         speed: 0.0005 + Math.random() * 0.001
     });
-});
+}
 
 // ============================
 // STAR CLASS (Twinkling + Glow)
@@ -32,13 +44,12 @@ class Star {
     constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.baseRadius = Math.random() * 2 + 0.5; // minimum radius 0.5
+        this.baseRadius = Math.random() * 2 + 0.5; // minimum radius
         this.radius = this.baseRadius;
         this.twinkleSpeed = Math.random() * 0.005 + 0.002;
     }
 
     update() {
-        // Clamp radius to never be negative
         this.radius = Math.max(
             0.3,
             this.baseRadius + Math.sin(Date.now() * this.twinkleSpeed) * 0.8
@@ -107,7 +118,7 @@ class Particle {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.radius = Math.random() * 3 + 0.5; // minimum radius 0.5
+        this.radius = Math.random() * 3 + 0.5;
         this.speedX = (Math.random() - 0.5) * 6;
         this.speedY = (Math.random() - 0.5) * 6;
         this.life = 50;
@@ -182,7 +193,7 @@ function animate() {
         return p.update();
     });
 
-    // Orbiting images
+    // Orbiting image stars
     angle += 0.001;
 
     images.forEach(img => {
@@ -190,8 +201,8 @@ function animate() {
         const x = canvas.width / 2 + Math.cos(img.angle) * img.radius;
         const y = canvas.height / 2 + Math.sin(img.angle) * img.radius;
 
-        img.element.style.left = `${x}px`;
-        img.element.style.top = `${y}px`;
+        img.element.style.left = `${x - imageSize / 2}px`;
+        img.element.style.top = `${y - imageSize / 2}px`;
     });
 
     requestAnimationFrame(animate);
