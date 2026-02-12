@@ -1,7 +1,10 @@
+/* --------------------------- */
+/* GENERAL BODY & CANVAS       */
+/* --------------------------- */
 body {
     margin: 0;
     overflow: hidden;
-    background-color: black;
+    background-color: black; /* keeps solid space background */
     font-family: Helvetica, sans-serif;
 }
 
@@ -9,16 +12,21 @@ canvas {
     display: block;
 }
 
+/* --------------------------- */
+/* POPUP STYLING               */
+/* --------------------------- */
 #popup {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.95); /* slightly darker popup */
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 15px;
     text-align: center;
-    z-index: 10;
+    z-index: 1000;
+    box-shadow: 0 0 30px #ffffff88; /* soft glow around popup */
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 #popup img {
@@ -26,15 +34,26 @@ canvas {
     max-height: 500px;
     display: block;
     margin-bottom: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px #ffffff66; /* subtle glow on image */
 }
 
 #closePopup {
-    color: white;
+    color: #ffdddd;
     cursor: pointer;
     font-style: italic;
     font-size: 14px;
+    user-select: none;
+    transition: color 0.2s ease;
 }
 
+#closePopup:hover {
+    color: #ffffff;
+}
+
+/* --------------------------- */
+/* HIDDEN CLASS                */
+/* --------------------------- */
 .hidden {
     display: none;
 }
