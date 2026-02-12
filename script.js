@@ -11,6 +11,18 @@ function resizeCanvas() {
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
+
+const bgMusic = document.getElementById('bgMusic');
+
+// Play music after the first click anywhere on the canvas
+let musicStarted = false;
+canvas.addEventListener('click', () => {
+    if (!musicStarted) {
+        bgMusic.play().catch(err => console.warn("Music blocked:", err));
+        musicStarted = true;
+    }
+});
+
 // ---------------------------
 // CLICKABLE STAR POSITIONS
 // ---------------------------
@@ -178,13 +190,3 @@ canvas.addEventListener('click', e => {
     }
 });
 
-const bgMusic = document.getElementById('bgMusic');
-
-// Play after first click anywhere on the canvas
-let musicStarted = false;
-canvas.addEventListener('click', () => {
-    if (!musicStarted) {
-        bgMusic.play().catch(err => console.warn("Music blocked:", err));
-        musicStarted = true;
-    }
-});
