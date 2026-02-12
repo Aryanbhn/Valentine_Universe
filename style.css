@@ -1,32 +1,43 @@
-/* --------------------------- */
-/* GENERAL BODY & CANVAS       */
-/* --------------------------- */
 body {
     margin: 0;
     overflow: hidden;
-    background-color: black; /* keeps solid space background */
+    background-color: black;
     font-family: Helvetica, sans-serif;
 }
 
 canvas {
     display: block;
+    position: absolute; /* Make sure canvas sits behind other elements */
+    top: 0;
+    left: 0;
+    z-index: 0;
 }
 
-/* --------------------------- */
-/* POPUP STYLING               */
-/* --------------------------- */
+/* Title styling */
+#universeTitle {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffffffcc;
+    font-family: 'Helvetica', sans-serif;
+    font-size: 36px;
+    text-shadow: 0 0 10px #8888ff, 0 0 20px #5555ff;
+    z-index: 10; /* Ensure it is above canvas */
+}
+
+/* Popup styling */
 #popup {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.95); /* slightly darker popup */
+    background: rgba(0,0,0,0.95);
     padding: 20px;
     border-radius: 15px;
     text-align: center;
     z-index: 1000;
-    box-shadow: 0 0 30px #ffffff88; /* soft glow around popup */
-    transition: opacity 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 0 30px #ffffff88;
 }
 
 #popup img {
@@ -35,7 +46,7 @@ canvas {
     display: block;
     margin-bottom: 10px;
     border-radius: 10px;
-    box-shadow: 0 0 20px #ffffff66; /* subtle glow on image */
+    box-shadow: 0 0 20px #ffffff66;
 }
 
 #closePopup {
@@ -46,26 +57,6 @@ canvas {
     user-select: none;
     transition: color 0.2s ease;
 }
+#closePopup:hover { color: #ffffff; }
 
-#closePopup:hover {
-    color: #ffffff;
-}
-
-/* --------------------------- */
-/* HIDDEN CLASS                */
-/* --------------------------- */
-.hidden {
-    display: none;
-}
-
-#universeTitle {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #ffffffcc;
-    font-family: 'Helvetica', sans-serif;
-    font-size: 36px;
-    text-shadow: 0 0 10px #8888ff, 0 0 20px #5555ff;
-    z-index: 10;
-}
+.hidden { display: none; }
