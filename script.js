@@ -1,31 +1,47 @@
+// ---------------------------
+// CANVAS SETUP
+// ---------------------------
 const canvas = document.getElementById('universe');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
 
-const centerX = canvas.width / 2;
-const centerY = canvas.height / 2;
-
-// ---------------------------
-// BACKGROUND NEBULA
-// ---------------------------
-const nebulaImg = new Image();
-nebulaImg.src = 'nebula.png';
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
 
 // ---------------------------
-// LOAD IMAGES
+// LOAD STAR IMAGES SAFELY
 // ---------------------------
-const imageFiles = [];
-for(let i=1; i<=30; i++){
-    imageFiles.push(`Image${i}.jpeg`);
+const totalStars = 30;
+const starImages = [];
+const stars = [];
+
+for (let i = 1; i <= totalStars; i++) {
+    const img = new Image();
+    img.src = `Image${i}.jpeg`;
+    img.onerror = () => console.warn(`Image${i}.jpeg failed to load`);
+    starImages.push(img);
 }
 
 // ---------------------------
-// STARS
+// BACKGROUND FAINT STARS
 // ---------------------------
-const stars = [];
+const backgroundStars = [];
+for (let i = 0; i < 300; i++) {
+    backgroundStars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2 + 1,
+        color: ["#555", "#777", "#999"][Math.floor(Math.random() * 3)]
+    });
+}
+
+// ---------------------------
+// CLICKABLE STARS
+// ---------------------------
 const positions = [];
-const numStars = Math.min(30, imageFiles.length);
 
 function isFarEnough(x, y){
     for(const pos of positions){
@@ -36,16 +52,20 @@ function isFarEnough(x, y){
     return true;
 }
 
-for(let i=0; i<numStars; i++){
+starImages.forEach((img, i) => {
+    if (!img.complete) return; // skip if not loaded yet
     let x, y;
+    let attempts = 0;
     do {
         x = Math.random() * (canvas.width - 200) + 100;
         y = Math.random() * (canvas.height - 200) + 100;
-    } while(!isFarEnough(x,y));
-    positions.push({x,y});
-    const size = Math.random()*4 + 6; // star size 6-10
-    stars.push({x, y, size, image: imageFiles[i]});
-}
+        attempts++;
+        if(attempts > 100) break; // prevent infinite loop
+    } while(!isFarEnough(x, y));
+    positions.push({x, y});
+    const size = Math.random() * 4 + 6;
+    stars.push({x, y, size, image: img});
+});
 
 // ---------------------------
 // SHOOTING STARS
@@ -67,12 +87,12 @@ const popup = document.getElementById('popup');
 const popupImage = document.getElementById('popupImage');
 const closePopup = document.getElementById('closePopup');
 
-function showPopup(src){
-    popupImage.src = src;
+function showPopup(imgObj){
+    popupImage.src = imgObj.src;
     popup.classList.remove('hidden');
 }
 
-closePopup.onclick = ()=>{ popup.classList.add('hidden'); }
+closePopup.onclick = () => { popup.classList.add('hidden'); };
 
 // ---------------------------
 // ANIMATION LOOP
@@ -80,21 +100,22 @@ closePopup.onclick = ()=>{ popup.classList.add('hidden'); }
 function animate(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // draw nebula
-    ctx.drawImage(nebulaImg,0,0,canvas.width, canvas.height);
+    // black background
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0,0,canvas.width, canvas.height);
 
-    // faint background stars
-    for(let i=0;i<300;i++){
-        const x = Math.random()*canvas.width;
-        const y = Math.random()*canvas.height;
-        ctx.fillStyle = ["#555","#777","#999"][Math.floor(Math.random()*3)];
+    // draw faint stars
+    backgroundStars.forEach(s=>{
+        ctx.fillStyle = s.color;
         ctx.beginPath();
-        ctx.arc(x,y,Math.random()*2+1,0,Math.PI*2);
+        ctx.arc(s.x, s.y, s.size,0,Math.PI*2);
         ctx.fill();
-    }
+    });
 
-    // draw stars
+    // draw clickable stars
     stars.forEach(star=>{
+        if(!star.image.complete || star.image.naturalWidth === 0) return; // skip broken images
+
         // glow
         const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size+3);
         gradient.addColorStop(0,'white');
@@ -105,7 +126,7 @@ function animate(){
         ctx.arc(star.x,star.y,star.size+3,0,Math.PI*2);
         ctx.fill();
 
-        // star circle
+        // main star
         ctx.fillStyle = "white";
         ctx.beginPath();
         ctx.arc(star.x, star.y, star.size,0,Math.PI*2);
@@ -150,12 +171,4 @@ canvas.addEventListener('click', function(e){
             break;
         }
     }
-});
-
-// ---------------------------
-// RESIZE HANDLING
-// ---------------------------
-window.addEventListener('resize', ()=>{
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
 });
