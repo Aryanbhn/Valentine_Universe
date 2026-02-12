@@ -26,6 +26,8 @@ for (let i = 1; i <= totalImages; i++) {
     img.style.position = "absolute";
     img.style.width = `${imageSize}px`;
     img.style.height = `${imageSize}px`;
+    img.style.zIndex = 10; // ensures images appear above the canvas
+
     img.style.pointerEvents = "auto"; // allows clicking
     document.body.appendChild(img);
 
