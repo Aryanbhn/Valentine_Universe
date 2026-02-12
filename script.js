@@ -1,34 +1,39 @@
+// ============================
+// CANVAS SETUP
+// ============================
 const canvas = document.getElementById("universe");
 const ctx = canvas.getContext("2d");
 const bgMusic = document.getElementById("bgMusic");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+canvas.style.position = "absolute";
+canvas.style.top = "0";
+canvas.style.left = "0";
+canvas.style.zIndex = "1";
 
 let stars = [];
 let shootingStars = [];
 let particles = [];
 let images = [];
-let angle = 0;
 
 // ============================
 // CONFIGURATION
 // ============================
-const totalImages = 31; // Change this number if you add/remove images
+const totalImages = 31; // Change this number to match your images
 const imageSize = 80; // size of clickable image stars
 
 // ============================
-// DYNAMIC IMAGE ELEMENTS
+// CREATE DYNAMIC IMAGE ELEMENTS
 // ============================
 for (let i = 1; i <= totalImages; i++) {
     const img = new Image();
-    img.src = `Image${i}.jpeg`; // make sure your images are named correctly
-    img.style.position = "absolute";
-    img.style.width = `${imageSize}px`;
-    img.style.height = `${imageSize}px`;
-    img.style.zIndex = 10; // ensures images appear above the canvas
+    img.src = `Image${i}.jpeg`;
+    img.className = "memory-image"; // style from CSS
+    img.style.pointerEvents = "auto"; // allow clicking
+    img.style.zIndex = "10"; // above canvas
 
-    img.style.pointerEvents = "auto"; // allows clicking
+    // Append immediately, images will load asynchronously
     document.body.appendChild(img);
 
     images.push({
@@ -46,7 +51,7 @@ class Star {
     constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.baseRadius = Math.random() * 2 + 0.5; // minimum radius
+        this.baseRadius = Math.random() * 2 + 0.5;
         this.radius = this.baseRadius;
         this.twinkleSpeed = Math.random() * 0.005 + 0.002;
     }
@@ -86,7 +91,6 @@ class ShootingStar {
         this.x += this.speed;
         this.y += this.speed;
         this.life++;
-
         if (this.life > 40) {
             this.burst();
             return false;
@@ -114,7 +118,7 @@ class ShootingStar {
 }
 
 // ============================
-// BURST PARTICLES
+// PARTICLE BURST
 // ============================
 class Particle {
     constructor(x, y) {
@@ -162,13 +166,12 @@ function animate() {
         star.draw();
     });
 
-    // Constellation Lines
+    // Constellation lines
     for (let i = 0; i < stars.length; i++) {
         for (let j = i + 1; j < stars.length; j++) {
-            let dx = stars[i].x - stars[j].x;
-            let dy = stars[i].y - stars[j].y;
-            let distance = Math.sqrt(dx * dx + dy * dy);
-
+            const dx = stars[i].x - stars[j].x;
+            const dy = stars[i].y - stars[j].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
             if (distance < 120) {
                 ctx.beginPath();
                 ctx.strokeStyle = "rgba(255,255,255,0.08)";
@@ -180,10 +183,7 @@ function animate() {
     }
 
     // Shooting stars
-    if (Math.random() < 0.005) {
-        shootingStars.push(new ShootingStar());
-    }
-
+    if (Math.random() < 0.005) shootingStars.push(new ShootingStar());
     shootingStars = shootingStars.filter(star => {
         star.draw();
         return star.update();
@@ -196,13 +196,10 @@ function animate() {
     });
 
     // Orbiting image stars
-    angle += 0.001;
-
     images.forEach(img => {
         img.angle += img.speed;
         const x = canvas.width / 2 + Math.cos(img.angle) * img.radius;
         const y = canvas.height / 2 + Math.sin(img.angle) * img.radius;
-
         img.element.style.left = `${x - imageSize / 2}px`;
         img.element.style.top = `${y - imageSize / 2}px`;
     });
@@ -219,13 +216,9 @@ document.body.addEventListener("click", () => {
     if (bgMusic.paused) {
         bgMusic.volume = 0;
         bgMusic.play();
-
-        let fade = setInterval(() => {
-            if (bgMusic.volume < 0.5) {
-                bgMusic.volume += 0.01;
-            } else {
-                clearInterval(fade);
-            }
+        const fade = setInterval(() => {
+            if (bgMusic.volume < 0.5) bgMusic.volume += 0.01;
+            else clearInterval(fade);
         }, 100);
     }
 });
