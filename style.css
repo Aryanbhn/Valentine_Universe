@@ -1,0 +1,40 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: black;
+    font-family: Helvetica, sans-serif;
+}
+
+canvas {
+    display: block;
+}
+
+#popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 10;
+}
+
+#popup img {
+    max-width: 500px;
+    max-height: 500px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+#closePopup {
+    color: white;
+    cursor: pointer;
+    font-style: italic;
+    font-size: 14px;
+}
+
+.hidden {
+    display: none;
+}
