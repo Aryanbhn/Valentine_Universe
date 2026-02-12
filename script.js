@@ -177,3 +177,14 @@ canvas.addEventListener('click', e => {
         }
     }
 });
+
+const bgMusic = document.getElementById('bgMusic');
+
+// Play after first click anywhere on the canvas
+let musicStarted = false;
+canvas.addEventListener('click', () => {
+    if (!musicStarted) {
+        bgMusic.play().catch(err => console.warn("Music blocked:", err));
+        musicStarted = true;
+    }
+});
