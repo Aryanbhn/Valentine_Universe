@@ -7,19 +7,22 @@ const bgMusic = document.getElementById("bgMusic");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+canvas.style.position = "absolute";
+canvas.style.top = "0";
+canvas.style.left = "0";
+canvas.style.zIndex = "1";
 
 let stars = [];
 let shootingStars = [];
 let particles = [];
-let imageStars = []; // stars associated with images
+let imageStars = []; // stars with images
 
 // ============================
 // CONFIGURATION
 // ============================
-const totalImages = 31; // number of images
-const imageSize = 120; // used for popup, not orbit
-const starCount = 200; // number of stars
-const clickRadius = 15; // how close the click must be to trigger
+const totalImages = 31;     // Number of images
+const starCount = 200;      // Number of normal stars
+const clickRadius = 15;     // How close the click must be to trigger popup
 
 // ============================
 // LOAD IMAGES
@@ -27,7 +30,7 @@ const clickRadius = 15; // how close the click must be to trigger
 let images = [];
 for (let i = 1; i <= totalImages; i++) {
     const img = new Image();
-    img.src = `Image${i}.jpeg`;
+    img.src = `Image${i}.jpeg`;  // ensure exact file names
     images.push(img);
 }
 
@@ -35,13 +38,13 @@ for (let i = 1; i <= totalImages; i++) {
 // STAR CLASS
 // ============================
 class Star {
-    constructor(x, y, image=null) {
+    constructor(x, y, image = null) {
         this.x = x || Math.random() * canvas.width;
         this.y = y || Math.random() * canvas.height;
         this.baseRadius = Math.random() * 2 + 0.5;
         this.radius = this.baseRadius;
         this.twinkleSpeed = Math.random() * 0.005 + 0.002;
-        this.image = image; // optional
+        this.image = image; // optional associated image
     }
 
     update() {
@@ -53,10 +56,11 @@ class Star {
 
     draw() {
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = "white";
+        // Make image stars slightly bigger and yellow
+        ctx.arc(this.x, this.y, this.radius + (this.image ? 1.5 : 0), 0, Math.PI * 2);
+        ctx.fillStyle = this.image ? "yellow" : "white";
         ctx.shadowBlur = 15;
-        ctx.shadowColor = "white";
+        ctx.shadowColor = this.image ? "yellow" : "white";
         ctx.fill();
         ctx.shadowBlur = 0;
     }
@@ -138,9 +142,7 @@ class Particle {
 // ============================
 // CREATE STARS AND IMAGE STARS
 // ============================
-for (let i = 0; i < starCount; i++) {
-    stars.push(new Star());
-}
+for (let i = 0; i < starCount; i++) stars.push(new Star());
 
 // randomly assign images to stars
 for (let i = 0; i < images.length; i++) {
