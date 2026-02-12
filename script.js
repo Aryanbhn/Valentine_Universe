@@ -32,15 +32,17 @@ class Star {
     constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.baseRadius = Math.random() * 2;
+        this.baseRadius = Math.random() * 2 + 0.5; // minimum radius 0.5
         this.radius = this.baseRadius;
-        this.twinkleSpeed = Math.random() * 0.005;
+        this.twinkleSpeed = Math.random() * 0.005 + 0.002;
     }
 
     update() {
-        this.radius =
-            this.baseRadius +
-            Math.sin(Date.now() * this.twinkleSpeed) * 0.8;
+        // Clamp radius to never be negative
+        this.radius = Math.max(
+            0.3,
+            this.baseRadius + Math.sin(Date.now() * this.twinkleSpeed) * 0.8
+        );
     }
 
     draw() {
@@ -105,7 +107,7 @@ class Particle {
     constructor(x, y) {
         this.x = x;
         this.y = y;
-        this.radius = Math.random() * 3;
+        this.radius = Math.random() * 3 + 0.5; // minimum radius 0.5
         this.speedX = (Math.random() - 0.5) * 6;
         this.speedY = (Math.random() - 0.5) * 6;
         this.life = 50;
@@ -185,12 +187,8 @@ function animate() {
 
     images.forEach(img => {
         img.angle += img.speed;
-        const x =
-            canvas.width / 2 +
-            Math.cos(img.angle) * img.radius;
-        const y =
-            canvas.height / 2 +
-            Math.sin(img.angle) * img.radius;
+        const x = canvas.width / 2 + Math.cos(img.angle) * img.radius;
+        const y = canvas.height / 2 + Math.sin(img.angle) * img.radius;
 
         img.element.style.left = `${x}px`;
         img.element.style.top = `${y}px`;
@@ -217,4 +215,12 @@ document.body.addEventListener("click", () => {
             }
         }, 100);
     }
+});
+
+// ============================
+// RESIZE HANDLING
+// ============================
+window.addEventListener("resize", () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 });
