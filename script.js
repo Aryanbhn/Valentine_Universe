@@ -12,17 +12,52 @@ window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
 
 // ---------------------------
-// LOAD STAR IMAGES SAFELY
+// CLICKABLE STAR POSITIONS
 // ---------------------------
-const totalStars = 30;
-const starImages = [];
+const positions = [];
 const stars = [];
+const starFolder = './'; // folder containing your images
 
+// Minimum distance between stars
+const MIN_DISTANCE = 70;
+
+// Check if position is far enough from other stars
+function isFarEnough(x, y) {
+    return positions.every(pos => {
+        const dx = pos.x - x;
+        const dy = pos.y - y;
+        return Math.sqrt(dx*dx + dy*dy) >= MIN_DISTANCE;
+    });
+}
+
+// ---------------------------
+// LOAD IMAGES DYNAMICALLY
+// ---------------------------
+// Example: Image1.jpeg, Image2.jpeg, ...
+// We'll generate star objects after each image loads
+
+const totalStars = 31; // adjust to match how many images you have
 for (let i = 1; i <= totalStars; i++) {
     const img = new Image();
-    img.src = `Image${i}.jpeg`;
-    img.onerror = () => console.warn(`Image${i}.jpeg failed to load`);
-    starImages.push(img);
+    img.src = `${starFolder}Image${i}.jpeg`;
+    
+    img.onload = () => {
+        // Create a star only after image loads
+        let x, y;
+        let attempts = 0;
+        do {
+            x = Math.random() * (canvas.width - 100) + 50;
+            y = Math.random() * (canvas.height - 100) + 50;
+            attempts++;
+            if (attempts > 200) break; // prevent infinite loop
+        } while (!isFarEnough(x, y));
+
+        positions.push({x, y});
+        const size = Math.random() * 4 + 5; // smaller size for subtle stars
+        stars.push({x, y, size, image: img});
+    };
+
+    img.onerror = () => console.warn(`Failed to load Image${i}.jpeg`);
 }
 
 // ---------------------------
@@ -39,48 +74,15 @@ for (let i = 0; i < 300; i++) {
 }
 
 // ---------------------------
-// CLICKABLE STARS POSITIONS
-// ---------------------------
-const positions = [];
-
-function isFarEnough(x, y){
-    for(const pos of positions){
-        const dx = pos.x - x;
-        const dy = pos.y - y;
-        if(Math.sqrt(dx*dx + dy*dy) < 70) return false;
-    }
-    return true;
-}
-
-// Only create stars for images that actually loaded
-starImages.forEach((img) => {
-    // skip broken images
-    if (!img.complete) return;
-
-    let x, y;
-    let attempts = 0;
-    do {
-        x = Math.random() * (canvas.width - 200) + 100;
-        y = Math.random() * (canvas.height - 200) + 100;
-        attempts++;
-        if(attempts > 100) break; // avoid infinite loop
-    } while(!isFarEnough(x, y));
-
-    positions.push({x, y});
-    const size = Math.random() * 4 + 6;
-    stars.push({x, y, size, image: img});
-});
-
-// ---------------------------
 // SHOOTING STARS
 // ---------------------------
 const shootingStars = [];
-for(let i=0;i<5;i++){
+for (let i = 0; i < 5; i++) {
     shootingStars.push({
-        x: Math.random()*canvas.width,
-        y: Math.random()*300,
-        length: Math.random()*70 + 50,
-        speed: Math.random()*5 + 5
+        x: Math.random() * canvas.width,
+        y: Math.random() * 300,
+        length: Math.random() * 70 + 50,
+        speed: Math.random() * 5 + 5
     });
 }
 
@@ -91,67 +93,65 @@ const popup = document.getElementById('popup');
 const popupImage = document.getElementById('popupImage');
 const closePopup = document.getElementById('closePopup');
 
-function showPopup(imgObj){
+function showPopup(imgObj) {
     popupImage.src = imgObj.src;
     popup.classList.remove('hidden');
 }
-
-closePopup.onclick = () => { popup.classList.add('hidden'); };
+closePopup.onclick = () => popup.classList.add('hidden');
 
 // ---------------------------
 // ANIMATION LOOP
 // ---------------------------
-function animate(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // black background
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0,0,canvas.width, canvas.height);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // draw faint stars
-    backgroundStars.forEach(s=>{
+    // draw faint background stars
+    backgroundStars.forEach(s => {
         ctx.fillStyle = s.color;
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size,0,Math.PI*2);
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
         ctx.fill();
     });
 
-    // draw clickable stars
-    stars.forEach(star=>{
-        // skip broken images
-        if(!star.image.complete || star.image.naturalWidth === 0) return;
+    // draw clickable stars with glow
+    stars.forEach(star => {
+        if (!star.image.complete || star.image.naturalWidth === 0) return;
 
-        // glow
-        const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size+3);
-        gradient.addColorStop(0,'white');
-        gradient.addColorStop(0.5,'#8888ff22');
-        gradient.addColorStop(1,'rgba(0,0,0,0)');
+        // soft glow
+        const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size + 4);
+        gradient.addColorStop(0, 'white');
+        gradient.addColorStop(0.5, 'rgba(136,136,255,0.15)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = gradient;
         ctx.beginPath();
-        ctx.arc(star.x,star.y,star.size+3,0,Math.PI*2);
+        ctx.arc(star.x, star.y, star.size + 4, 0, Math.PI * 2);
         ctx.fill();
 
         // main star
         ctx.fillStyle = "white";
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size,0,Math.PI*2);
+        ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
         ctx.fill();
     });
 
     // shooting stars
-    shootingStars.forEach(s=>{
+    shootingStars.forEach(s => {
         ctx.strokeStyle = "white";
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(s.x, s.y);
-        ctx.lineTo(s.x + s.length, s.y + s.length/2);
+        ctx.lineTo(s.x + s.length, s.y + s.length / 2);
         ctx.stroke();
 
         s.x += s.speed;
-        s.y += s.speed/2;
-        if(s.x > canvas.width || s.y > canvas.height){
+        s.y += s.speed / 2;
+        if (s.x > canvas.width || s.y > canvas.height) {
             s.x = -100;
-            s.y = Math.random()*300;
+            s.y = Math.random() * 300;
         }
     });
 
@@ -163,15 +163,15 @@ animate();
 // ---------------------------
 // STAR CLICK DETECTION
 // ---------------------------
-canvas.addEventListener('click', function(e){
+canvas.addEventListener('click', e => {
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    for(const star of stars){
+    for (const star of stars) {
         const dx = star.x - mouseX;
         const dy = star.y - mouseY;
-        if(Math.sqrt(dx*dx + dy*dy) <= star.size){
+        if (Math.sqrt(dx*dx + dy*dy) <= star.size) {
             showPopup(star.image);
             break;
         }
