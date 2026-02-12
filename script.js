@@ -1,169 +1,199 @@
-// ---------------------------
-// CANVAS SETUP
-// ---------------------------
-const canvas = document.getElementById('universe');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById("universe");
+const ctx = canvas.getContext("2d");
+const bgMusic = document.getElementById("bgMusic");
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-// ---------------------------
-// AUDIO SETUP
-// ---------------------------
-const bgMusic = document.getElementById('bgMusic');
-let musicStarted = false;
-canvas.addEventListener('click', () => {
-    if (!musicStarted) {
-        bgMusic.play().catch(err => console.warn("Music blocked:", err));
-        musicStarted = true;
-    }
+let stars = [];
+let shootingStars = [];
+let particles = [];
+let images = [];
+let angle = 0;
+
+// ============================
+// HANDLE ANY NUMBER OF IMAGES
+// ============================
+const imageElements = document.querySelectorAll(".memory-image");
+
+imageElements.forEach(img => {
+    images.push({
+        element: img,
+        angle: Math.random() * Math.PI * 2,
+        radius: 250 + Math.random() * 150,
+        speed: 0.0005 + Math.random() * 0.001
+    });
 });
 
-// ---------------------------
-// LOAD STAR IMAGES
-// ---------------------------
-const starImages = [];
-const stars = [];
-const totalStars = 30; // can adjust based on how many images you have
-
-for (let i = 1; i <= totalStars; i++) {
-    const img = new Image();
-    img.src = `Image${i}.jpeg`;
-    img.onerror = () => console.warn(`Image${i}.jpeg failed to load`);
-    starImages.push(img);
-}
-
-// ---------------------------
-// BACKGROUND FAINT STARS
-// ---------------------------
-const backgroundStars = [];
-for (let i = 0; i < 300; i++) {
-    backgroundStars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2 + 1,
-        color: ["#555", "#777", "#999"][Math.floor(Math.random() * 3)]
-    });
-}
-
-// ---------------------------
-// CLICKABLE STAR POSITIONS
-// ---------------------------
-const positions = [];
-
-function isFarEnough(x, y) {
-    for (const pos of positions) {
-        const dx = pos.x - x;
-        const dy = pos.y - y;
-        if (Math.sqrt(dx*dx + dy*dy) < 70) return false;
+// ============================
+// STAR CLASS (Twinkling + Glow)
+// ============================
+class Star {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.baseRadius = Math.random() * 2;
+        this.radius = this.baseRadius;
+        this.twinkleSpeed = Math.random() * 0.005;
     }
-    return true;
-}
 
-// Only create stars for images that load successfully
-starImages.forEach((img) => {
-    img.onload = () => {
-        let x, y;
-        let attempts = 0;
-        do {
-            x = Math.random() * (canvas.width - 200) + 100;
-            y = Math.random() * (canvas.height - 200) + 100;
-            attempts++;
-            if(attempts > 100) break; // prevent infinite loops
-        } while(!isFarEnough(x, y));
+    update() {
+        this.radius =
+            this.baseRadius +
+            Math.sin(Date.now() * this.twinkleSpeed) * 0.8;
+    }
 
-        positions.push({x, y});
-        const size = Math.random() * 4 + 6; // star size 6-10
-        stars.push({x, y, size, image: img});
-    };
-});
-
-// ---------------------------
-// SHOOTING STARS
-// ---------------------------
-const shootingStars = [];
-for(let i = 0; i < 5; i++){
-    shootingStars.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * 300,
-        length: Math.random() * 70 + 50,
-        speed: Math.random() * 5 + 5
-    });
-}
-
-// ---------------------------
-// POPUP
-// ---------------------------
-const popup = document.getElementById('popup');
-const popupImage = document.getElementById('popupImage');
-const closePopup = document.getElementById('closePopup');
-
-function showPopup(imgObj) {
-    popupImage.src = imgObj.src;
-    popup.classList.remove('hidden');
-}
-
-closePopup.onclick = () => { popup.classList.add('hidden'); };
-
-// ---------------------------
-// ANIMATION LOOP
-// ---------------------------
-function animate() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    // black background
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0,0,canvas.width, canvas.height);
-
-    // draw faint stars
-    backgroundStars.forEach(s=>{
-        ctx.fillStyle = s.color;
+    draw() {
         ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size,0,Math.PI*2);
-        ctx.fill();
-    });
-
-    // draw clickable stars
-    stars.forEach(star => {
-        // skip broken images
-        if (!star.image.complete || star.image.naturalWidth === 0) return;
-
-        // glow
-        const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size+3);
-        gradient.addColorStop(0,'white');
-        gradient.addColorStop(0.5,'#8888ff22');
-        gradient.addColorStop(1,'rgba(0,0,0,0)');
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(star.x,star.y,star.size+3,0,Math.PI*2);
-        ctx.fill();
-
-        // main star
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fillStyle = "white";
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.size,0,Math.PI*2);
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "white";
         ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+}
+
+// ============================
+// SHOOTING STAR
+// ============================
+class ShootingStar {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = 0;
+        this.len = 300;
+        this.speed = 10;
+        this.size = 2;
+        this.life = 0;
+    }
+
+    update() {
+        this.x += this.speed;
+        this.y += this.speed;
+        this.life++;
+
+        if (this.life > 40) {
+            this.burst();
+            return false;
+        }
+        return true;
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(this.x - this.len, this.y - this.len);
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = this.size;
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = "white";
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+    }
+
+    burst() {
+        for (let i = 0; i < 20; i++) {
+            particles.push(new Particle(this.x, this.y));
+        }
+    }
+}
+
+// ============================
+// BURST PARTICLES
+// ============================
+class Particle {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = Math.random() * 3;
+        this.speedX = (Math.random() - 0.5) * 6;
+        this.speedY = (Math.random() - 0.5) * 6;
+        this.life = 50;
+    }
+
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life--;
+        return this.life > 0;
+    }
+
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.globalAlpha = this.life / 50;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+}
+
+// ============================
+// CREATE STARS
+// ============================
+for (let i = 0; i < 200; i++) {
+    stars.push(new Star());
+}
+
+// ============================
+// ANIMATION LOOP
+// ============================
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw stars
+    stars.forEach(star => {
+        star.update();
+        star.draw();
     });
 
-    // shooting stars
-    shootingStars.forEach(s=>{
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(s.x, s.y);
-        ctx.lineTo(s.x + s.length, s.y + s.length/2);
-        ctx.stroke();
+    // Constellation Lines
+    for (let i = 0; i < stars.length; i++) {
+        for (let j = i + 1; j < stars.length; j++) {
+            let dx = stars[i].x - stars[j].x;
+            let dy = stars[i].y - stars[j].y;
+            let distance = Math.sqrt(dx * dx + dy * dy);
 
-        s.x += s.speed;
-        s.y += s.speed/2;
-        if(s.x > canvas.width || s.y > canvas.height){
-            s.x = -100;
-            s.y = Math.random()*300;
+            if (distance < 120) {
+                ctx.beginPath();
+                ctx.strokeStyle = "rgba(255,255,255,0.08)";
+                ctx.moveTo(stars[i].x, stars[i].y);
+                ctx.lineTo(stars[j].x, stars[j].y);
+                ctx.stroke();
+            }
         }
+    }
+
+    // Shooting stars
+    if (Math.random() < 0.005) {
+        shootingStars.push(new ShootingStar());
+    }
+
+    shootingStars = shootingStars.filter(star => {
+        star.draw();
+        return star.update();
+    });
+
+    // Burst particles
+    particles = particles.filter(p => {
+        p.draw();
+        return p.update();
+    });
+
+    // Orbiting images
+    angle += 0.001;
+
+    images.forEach(img => {
+        img.angle += img.speed;
+        const x =
+            canvas.width / 2 +
+            Math.cos(img.angle) * img.radius;
+        const y =
+            canvas.height / 2 +
+            Math.sin(img.angle) * img.radius;
+
+        img.element.style.left = `${x}px`;
+        img.element.style.top = `${y}px`;
     });
 
     requestAnimationFrame(animate);
@@ -171,20 +201,20 @@ function animate() {
 
 animate();
 
-// ---------------------------
-// STAR CLICK DETECTION
-// ---------------------------
-canvas.addEventListener('click', function(e){
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+// ============================
+// MUSIC FADE-IN
+// ============================
+document.body.addEventListener("click", () => {
+    if (bgMusic.paused) {
+        bgMusic.volume = 0;
+        bgMusic.play();
 
-    for(const star of stars){
-        const dx = star.x - mouseX;
-        const dy = star.y - mouseY;
-        if(Math.sqrt(dx*dx + dy*dy) <= star.size){
-            showPopup(star.image);
-            break;
-        }
+        let fade = setInterval(() => {
+            if (bgMusic.volume < 0.5) {
+                bgMusic.volume += 0.01;
+            } else {
+                clearInterval(fade);
+            }
+        }, 100);
     }
 });

@@ -1,62 +1,39 @@
 body {
     margin: 0;
     overflow: hidden;
-    background-color: black;
-    font-family: Helvetica, sans-serif;
+    background: radial-gradient(circle at center, #0a0a2a 0%, #000000 70%);
+    font-family: Arial, sans-serif;
 }
 
 canvas {
-    display: block;
-    position: absolute; /* Make sure canvas sits behind other elements */
+    position: absolute;
     top: 0;
     left: 0;
-    z-index: 0;
 }
 
-/* Title styling */
-#universeTitle {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #ffffffcc;
-    font-family: 'Helvetica', sans-serif;
-    font-size: 36px;
-    text-shadow: 0 0 10px #8888ff, 0 0 20px #5555ff;
-    z-index: 10; /* Ensure it is above canvas */
-}
-
-/* Popup styling */
-#popup {
-    position: fixed;
-    top: 50%;
-    left: 50%;
+.memory-image {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
     transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.95);
-    padding: 20px;
-    border-radius: 15px;
+    transition: transform 0.3s ease;
+}
+
+.memory-image:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+h1 {
+    position: absolute;
+    top: 40px;
+    width: 100%;
     text-align: center;
-    z-index: 1000;
-    box-shadow: 0 0 30px #ffffff88;
+    color: white;
+    font-size: 48px;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px white;
+    pointer-events: none;
 }
-
-#popup img {
-    max-width: 500px;
-    max-height: 500px;
-    display: block;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px #ffffff66;
-}
-
-#closePopup {
-    color: #ffdddd;
-    cursor: pointer;
-    font-style: italic;
-    font-size: 14px;
-    user-select: none;
-    transition: color 0.2s ease;
-}
-#closePopup:hover { color: #ffffff; }
-
-.hidden { display: none; }
