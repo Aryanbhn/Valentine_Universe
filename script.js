@@ -13,6 +13,7 @@ canvas.style.left = "0";
 canvas.style.zIndex = "1";
 
 let stars = [];
+let normalStars = []; // stars for constellations
 let shootingStars = [];
 let particles = [];
 let imageStars = []; // stars with images
@@ -30,7 +31,7 @@ const clickRadius = 15;     // How close the click must be to trigger popup
 let images = [];
 for (let i = 1; i <= totalImages; i++) {
     const img = new Image();
-    img.src = `Image${i}.jpeg`;  // ensure exact file names
+    img.src = `Image${i}.jpeg`;
     images.push(img);
 }
 
@@ -142,7 +143,11 @@ class Particle {
 // ============================
 // CREATE STARS AND IMAGE STARS
 // ============================
-for (let i = 0; i < starCount; i++) stars.push(new Star());
+for (let i = 0; i < starCount; i++) {
+    const s = new Star();
+    stars.push(s);
+    normalStars.push(s); // only normal stars for constellations
+}
 
 // randomly assign images to stars
 for (let i = 0; i < images.length; i++) {
@@ -157,7 +162,15 @@ for (let i = 0; i < images.length; i++) {
 // ANIMATION LOOP
 // ============================
 function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Background gradient
+    const grad = ctx.createRadialGradient(
+        canvas.width / 2, canvas.height / 2, canvas.height / 10,
+        canvas.width / 2, canvas.height / 2, canvas.height
+    );
+    grad.addColorStop(0, "#0a0a2a");
+    grad.addColorStop(1, "#000000");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw stars
     stars.forEach(star => {
@@ -165,17 +178,17 @@ function animate() {
         star.draw();
     });
 
-    // Constellation lines
-    for (let i = 0; i < stars.length; i++) {
-        for (let j = i + 1; j < stars.length; j++) {
-            const dx = stars[i].x - stars[j].x;
-            const dy = stars[i].y - stars[j].y;
+    // Draw constellations between normal stars
+    for (let i = 0; i < normalStars.length; i++) {
+        for (let j = i + 1; j < normalStars.length; j++) {
+            const dx = normalStars[i].x - normalStars[j].x;
+            const dy = normalStars[i].y - normalStars[j].y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             if (distance < 120) {
                 ctx.beginPath();
                 ctx.strokeStyle = "rgba(255,255,255,0.08)";
-                ctx.moveTo(stars[i].x, stars[i].y);
-                ctx.lineTo(stars[j].x, stars[j].y);
+                ctx.moveTo(normalStars[i].x, normalStars[i].y);
+                ctx.lineTo(normalStars[j].x, normalStars[j].y);
                 ctx.stroke();
             }
         }
