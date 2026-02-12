@@ -39,7 +39,7 @@ for (let i = 0; i < 300; i++) {
 }
 
 // ---------------------------
-// CLICKABLE STARS
+// CLICKABLE STARS POSITIONS
 // ---------------------------
 const positions = [];
 
@@ -52,16 +52,20 @@ function isFarEnough(x, y){
     return true;
 }
 
-starImages.forEach((img, i) => {
-    if (!img.complete) return; // skip if not loaded yet
+// Only create stars for images that actually loaded
+starImages.forEach((img) => {
+    // skip broken images
+    if (!img.complete) return;
+
     let x, y;
     let attempts = 0;
     do {
         x = Math.random() * (canvas.width - 200) + 100;
         y = Math.random() * (canvas.height - 200) + 100;
         attempts++;
-        if(attempts > 100) break; // prevent infinite loop
+        if(attempts > 100) break; // avoid infinite loop
     } while(!isFarEnough(x, y));
+
     positions.push({x, y});
     const size = Math.random() * 4 + 6;
     stars.push({x, y, size, image: img});
@@ -114,7 +118,8 @@ function animate(){
 
     // draw clickable stars
     stars.forEach(star=>{
-        if(!star.image.complete || star.image.naturalWidth === 0) return; // skip broken images
+        // skip broken images
+        if(!star.image.complete || star.image.naturalWidth === 0) return;
 
         // glow
         const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size+3);
