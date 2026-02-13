@@ -21,7 +21,7 @@ let imageStars = []; // stars with images
 // ============================
 // CONFIGURATION
 // ============================
-const totalImages = 38;     // Number of images
+const totalImages = 44;     // Number of images
 const starCount = 200;      // Number of normal stars
 const clickRadius = 15;     // How close the click must be to trigger popup
 
@@ -150,7 +150,7 @@ class Particle {
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 const safeRadius = 200; // no stars within 200px of title
-const minDistance = 70; // minimum distance between stars
+const minDistance = 150; // minimum distance between stars
 
 function randomStarPosition(existingStars) {
     let x, y;

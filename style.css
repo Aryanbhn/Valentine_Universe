@@ -26,7 +26,7 @@ h1#universeTitle {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: #fcd12a; /* soft yellow */
+    color: #f1c202; /* soft yellow */
     font-size: 72px;
     letter-spacing: 4px;
     pointer-events: none;
