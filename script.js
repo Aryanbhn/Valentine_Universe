@@ -150,7 +150,7 @@ class Particle {
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
 const safeRadius = 200; // no stars within 200px of title
-const minDistance = 40; // minimum distance between stars
+const minDistance = 70; // minimum distance between stars
 
 function randomStarPosition(existingStars) {
     let x, y;
@@ -184,8 +184,11 @@ function randomStarPosition(existingStars) {
 // Normal stars
 for (let i = 0; i < starCount; i++) {
     const pos = randomStarPosition(stars);
-    stars.push(new Star(pos.x, pos.y));
+    const star = new Star(pos.x, pos.y);
+    stars.push(star);
+    normalStars.push(star); // <-- THIS LINE FIXES CONSTELLATIONS
 }
+
 
 // Image stars
 for (let i = 0; i < images.length; i++) {
@@ -196,14 +199,6 @@ for (let i = 0; i < images.length; i++) {
 }
 
 
-// randomly assign images to stars
-for (let i = 0; i < images.length; i++) {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
-    const star = new Star(x, y, images[i]);
-    stars.push(star);
-    imageStars.push(star);
-}
 
 // ============================
 // ANIMATION LOOP
