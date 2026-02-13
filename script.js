@@ -143,11 +143,58 @@ class Particle {
 // ============================
 // CREATE STARS AND IMAGE STARS
 // ============================
-for (let i = 0; i < starCount; i++) {
-    const s = new Star();
-    stars.push(s);
-    normalStars.push(s); // only normal stars for constellations
+// ============================
+// CREATE STARS WITHOUT CLUMPING
+// ============================
+
+const centerX = canvas.width / 2;
+const centerY = canvas.height / 2;
+const safeRadius = 200; // no stars within 200px of title
+const minDistance = 40; // minimum distance between stars
+
+function randomStarPosition(existingStars) {
+    let x, y;
+    let attempts = 0;
+    do {
+        x = Math.random() * canvas.width;
+        y = Math.random() * canvas.height;
+        attempts++;
+        // check distance from title
+        const dxCenter = x - centerX;
+        const dyCenter = y - centerY;
+        const distFromCenter = Math.sqrt(dxCenter * dxCenter + dyCenter * dyCenter);
+        if (distFromCenter < safeRadius) continue;
+
+        // check distance from other stars
+        let tooClose = false;
+        for (let s of existingStars) {
+            const dx = x - s.x;
+            const dy = y - s.y;
+            if (Math.sqrt(dx*dx + dy*dy) < minDistance) {
+                tooClose = true;
+                break;
+            }
+        }
+        if (!tooClose) break;
+
+    } while (attempts < 1000);
+    return { x, y };
 }
+
+// Normal stars
+for (let i = 0; i < starCount; i++) {
+    const pos = randomStarPosition(stars);
+    stars.push(new Star(pos.x, pos.y));
+}
+
+// Image stars
+for (let i = 0; i < images.length; i++) {
+    const pos = randomStarPosition(stars);
+    const star = new Star(pos.x, pos.y, images[i]);
+    stars.push(star);
+    imageStars.push(star);
+}
+
 
 // randomly assign images to stars
 for (let i = 0; i < images.length; i++) {
