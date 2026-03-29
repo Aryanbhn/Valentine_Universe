@@ -21,7 +21,7 @@ let imageStars = []; // stars with images
 // ============================
 // CONFIGURATION
 // ============================
-const totalImages = 45;     // Number of images
+const totalImages = 50;     // Number of images
 const starCount = 200;      // Number of normal stars
 const clickRadius = 15;     // How close the click must be to trigger popup
 
